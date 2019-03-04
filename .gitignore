@@ -1,2 +1,5 @@
 *.o
 x509lint
+x509lint-int
+x509lint-root
+x509lint-sub
