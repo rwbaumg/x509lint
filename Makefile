@@ -3,7 +3,7 @@ LD = $(CC)
 RM = rm
 
 CFLAGS = -g -Wall -O2 -std=c99
-LIBS = -lcrypto
+LIBS = -lcrypto -lz -ldl -static-libgcc -static /usr/lib/x86_64-linux-gnu/libcrypto.a
 
 UNAME_O := $(shell uname -o)
 ifeq ($(UNAME_O),Cygwin)
