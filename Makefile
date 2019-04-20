@@ -21,8 +21,8 @@ PROGS_OBJS = $(patsubst %.c,%.o,$(X509_SRCS))
 all: $(HDR_OBJS) $(PROGS)
 
 $(PROGS): $(PROGS_OBJS)
-	@echo "Compiling $@ to $< ..."
-	$(LD) $(LDFLAGS) -o $@ $< $(HDR_OBJS) $(LIBS)
+	@echo "Compiling $@ to $@.o ..."
+	$(LD) $(LDFLAGS) -o $@ $@.o $(HDR_OBJS) $(LIBS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $< -c -o $@
