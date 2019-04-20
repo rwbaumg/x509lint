@@ -2,10 +2,8 @@ CC = gcc
 LD = $(CC)
 RM = rm
 
-LIBCRYPTO_PATH = /usr/lib/x86_64-linux-gnu/libcrypto.a
-
 CFLAGS = -g -Wall -O2 -std=c99
-LIBS = -lcrypto -lz -ldl -static-libgcc -static $(LIBCRYPTO_PATH)
+LIBS = -lcrypto -ldl -static -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
 
 UNAME_O := $(shell uname -o)
 ifeq ($(UNAME_O),Cygwin)
@@ -28,6 +26,14 @@ $(PROGS): $(PROGS_OBJS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $< -c -o $@
+
+config:
+	@echo    "static linking arguments  : -static -Wl,--whole-archive -lpthread -Wl,--no-whole-archive"
+	@echo -n "libcrypto config (shared) : "; pkg-config --silence-errors --libs libcrypto || pkg-config --libs libcrypto
+	@echo -n "libcrypto config (static) : "; pkg-config --silence-errors --static --libs libcrypto || pkg-config --static --libs libcrypto
+
+list:
+	@grep -Po '^[^#[:space:]|SHELL|PATH|$$][a-zA-Z].*(?=\:)' Makefile | grep -v UNAME | sort
 
 clean:
 	$(RM) -f $(PROGS) *.o
