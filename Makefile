@@ -2,42 +2,32 @@ CC = gcc
 LD = $(CC)
 RM = rm
 
+LIBCRYPTO_PATH = /usr/lib/x86_64-linux-gnu/libcrypto.a
+
 CFLAGS = -g -Wall -O2 -std=c99
-LIBS = -lcrypto -lz -ldl -static-libgcc -static /usr/lib/x86_64-linux-gnu/libcrypto.a
+LIBS = -lcrypto -lz -ldl -static-libgcc -static $(LIBCRYPTO_PATH)
 
 UNAME_O := $(shell uname -o)
 ifeq ($(UNAME_O),Cygwin)
     LIBS += -liconv
 endif
 
-OBJECTS = x509lint.o checks.o messages.o asn1_time.o
-OBJECTS_ROOT = x509lint-root.o checks.o messages.o asn1_time.o
-OBJECTS_INT = x509lint-int.o checks.o messages.o asn1_time.o
-OBJECTS_SUB = x509lint-sub.o checks.o messages.o asn1_time.o
+X509_SRCS = $(wildcard x509*.c)
+OBJ_HDRS = $(wildcard *.h)
+HDR_OBJS = $(patsubst %.h,%.o,$(OBJ_HDRS))
+HDR_SRCS = $(patsubst %.o,%.c,$(HDR_OBJS))
 
-all: ${x509lint-root} x509lint-root ${x509lint-int} x509lint-int ${x509lint-sub} x509lint-sub
+PROGS = $(patsubst %.c,%,$(X509_SRCS))
+PROGS_OBJS = $(patsubst %.c,%.o,$(X509_SRCS))
 
-x509lint: $(OBJECTS)
-	$(LD) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBS)
+all: $(HDR_OBJS) $(PROGS)
 
-x509lint-root: $(OBJECTS_ROOT)
-	$(LD) $(LDFLAGS) -o $@ $(OBJECTS_ROOT) $(LIBS)
-
-x509lint-int: $(OBJECTS_INT)
-	$(LD) $(LDFLAGS) -o $@ $(OBJECTS_INT) $(LIBS)
-
-x509lint-sub: $(OBJECTS_SUB)
-	$(LD) $(LDFLAGS) -o $@ $(OBJECTS_SUB) $(LIBS)
+$(PROGS): $(PROGS_OBJS)
+	@echo "Compiling $@ to $< ..."
+	$(LD) $(LDFLAGS) -o $@ $< $(HDR_OBJS) $(LIBS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $< -c -o $@
 
 clean:
-	$(RM) -f x509lint x509lint-sub x509lint-root x509lint-int *.o
-
-checks.o: checks.c checks.h
-x509lint.o: x509lint.c checks.h messages.h
-x509lint-root.o: x509lint-root.c checks.h messages.h
-x509lint-int.o: x509lint-int.c checks.h messages.h
-x509lint-sub.o: x509lint-sub.c checks.h messages.h
-messages.o: messages.c checks.h
+	$(RM) -f $(PROGS) *.o
